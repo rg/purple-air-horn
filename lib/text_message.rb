@@ -1,5 +1,6 @@
 # frozen_string_literal: true
-require_relative 'secrets'
+
+require_relative '../secrets' # The constants below must be specified in secrets.rb
 
 class TextMessage
   def initialize
