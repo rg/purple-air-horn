@@ -15,7 +15,7 @@ class Sensor
 
     pm2_5 = stat(name: :pm2_5_atm)
     new_value = lrapa ? lrapa_conversion(pm2_5) : pm2_5
-    save(value: new_value)
+    save(new_value)
 
     {
       lrapa: lrapa,
