@@ -20,9 +20,9 @@ class Sensor
     {
       lrapa: lrapa,
       old_value: old_value,
-      old_level: aqi_level_from_pm25(old_value),
+      old_level: aqi_level_from_pm2_5(old_value),
       new_value: new_value,
-      new_level: aqi_level_from_pm25(new_value),
+      new_level: aqi_level_from_pm2_5(new_value),
       aqi_delta: (new_value - old_value).round(2),
       updated_at: last_updated
     }
@@ -67,19 +67,24 @@ class Sensor
     calc.round(3)
   end
 
-  def aqi_level_from_pm25(val)
-    if 0 <= val && val <= 12
+  # https://forum.airnowtech.org/t/the-aqi-equation/169
+  def aqi_level_from_pm2_5(pm2_5)
+    c = pm2_5.round(1)
+
+    if 0 <= c && c <= 12.0
       :good
-    elsif 12 < val && val <= 35
+    elsif 12.1 <= c && c <= 35.4
       :moderate
-    elsif 35 < val && val <= 55
+    elsif 35.5 <= c && c <= 55.4
       :unhealhy_sg
-    elsif 55 < val && val <= 150
+    elsif 55.5 <= c && c <= 150.4
       :unhealthy
-    elsif 150 < val && val <= 250
+    elsif 150.5 <= c && c <= 250.4
       :very_unhealthy
-    elsif 250 < val
+    elsif 250.5 <= c && c <= 500.4
       :hazardous
+    elsif c <= 500.5
+      :holy_shit
     end
   end
 
