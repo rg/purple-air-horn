@@ -83,7 +83,7 @@ class Sensor
       :very_unhealthy
     elsif 250.5 <= c && c <= 500.4
       :hazardous
-    elsif c <= 500.5
+    elsif 500.5 <= c
       :holy_shit
     end
   end
