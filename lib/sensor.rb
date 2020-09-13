@@ -30,7 +30,7 @@ class Sensor
 
   private
 
-  attr_reader :sensor_id, :data, :lrapa
+  attr_reader :sensor_id, :data
 
   def fetch_raw_data
     response = Faraday.get("#{DATA_URL}#{sensor_id}")
@@ -61,6 +61,7 @@ class Sensor
     value.round(3)
   end
 
+  # https://www.lrapa.org/DocumentCenter/View/4147/PurpleAir-Correction-Summary
   def lrapa_conversion(pm2_5_atm)
     calc = (0.5 * pm2_5_atm) - 0.66
     calc.round(3)
@@ -98,7 +99,7 @@ class Sensor
     false
   end
 
-  def save(value:)
+  def save(value)
     File.write("#{sensor_id}.data", value)
   end
 
