@@ -1,6 +1,5 @@
 # TODO:
 #  - Allow averaging of data from multiple sensors
-#  - Improve handling of oscillations around threshold levels
 
 require 'active_support/core_ext/string'
 require 'awesome_print'
