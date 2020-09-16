@@ -64,6 +64,8 @@ class Sensor
   # https://www.lrapa.org/DocumentCenter/View/4147/PurpleAir-Correction-Summary
   def lrapa_conversion(pm2_5_atm)
     calc = (0.5 * pm2_5_atm) - 0.66
+    return 0 if calc.negative?
+
     calc.round(3)
   end
 
