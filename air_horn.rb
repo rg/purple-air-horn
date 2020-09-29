@@ -11,7 +11,10 @@ require 'twilio-ruby'
 require_relative 'lib/text_message'
 require_relative 'lib/sensor'
 
-data = Sensor.new(sensor_id: ENV['PURPLE_AIR_SENSOR_ID']).read
+data = Sensor.new(
+        sensor_id: ENV['PURPLE_AIR_SENSOR_ID'],
+        conversion: ENV['CONVERSION']
+      ).read
 
 STDOUT.puts "."
 
@@ -20,10 +23,10 @@ unless data[:aqi_delta].zero?
 
   if (data[:old_level] != data[:new_level])
     body = <<~MESSAGE
-      Change in #{data[:lrapa] ? '(LRAPA) ' : ''}air quality!
+      Change in air quality!
 
       Level:  #{data[:new_level]}
-      PM 2.5:  #{data[:new_value].round(2)} µg/m³
+      PM 2.5:  #{data[:new_value].round(2)} µg/m³ #{data[:conversion] ? "(#{data[:conversion]})" : ''}
       Updated:  #{data[:updated_at]}
     MESSAGE
 

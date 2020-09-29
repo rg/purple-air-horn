@@ -3,22 +3,24 @@
 class Sensor
   DATA_URL = 'https://www.purpleair.com/json?show='
 
-  def initialize(sensor_id:)
+  def initialize(sensor_id:, conversion:)
     raise ArgumentError, "sensor_id must be specified" unless sensor_id.present?
+
     @sensor_id = sensor_id
+    @conversion = conversion.try(:downcase)
   end
 
-  def read(lrapa: true)
+  def read
     fetch_raw_data
 
     old_value = load_saved || 0
 
     pm2_5 = stat(name: :pm2_5_atm)
-    new_value = lrapa ? lrapa_conversion(pm2_5) : pm2_5
+    new_value = converted_value(pm2_5)
     save(new_value)
 
     {
-      lrapa: lrapa,
+      conversion: conversion,
       old_value: old_value,
       old_level: aqi_level_from_pm2_5(old_value),
       new_value: new_value,
@@ -30,7 +32,7 @@ class Sensor
 
   private
 
-  attr_reader :sensor_id, :data
+  attr_reader :sensor_id, :conversion, :data
 
   def fetch_raw_data
     response = Faraday.get("#{DATA_URL}#{sensor_id}")
@@ -59,6 +61,24 @@ class Sensor
       end
 
     value.round(3)
+  end
+
+  def converted_value(pm2_5)
+    case conversion.try(:to_sym)
+      when :aqandu
+        aqandu_conversion(pm2_5)
+      when :lrapa
+        lrapa_conversion(pm2_5)
+      else
+        pm2_5
+    end
+  end
+
+  # http://www.aqandu.org/airu_sensor#calibrationSection
+  def aqandu_conversion(pm2_5_atm)
+    calc = (0.778 * pm2_5_atm) + 2.65
+
+    calc.round(3)
   end
 
   # https://www.lrapa.org/DocumentCenter/View/4147/PurpleAir-Correction-Summary
