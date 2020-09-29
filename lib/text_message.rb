@@ -4,11 +4,14 @@ require_relative '../secrets' # The constants below must be specified in secrets
 
 class TextMessage
   def initialize
+    raise ArgumentError, "Recipient phone numbers must be specified" unless ENV['PHONE_NUMBERS'].present?
+
     @client = Twilio::REST::Client.new(TWILIO_SID, TWILIO_AUTH_TOKEN)
+    @phone_numbers = ENV['PHONE_NUMBERS'].split(',').map(&:strip)
   end
 
   def send(body:)
-    DISTRIBUTION_LIST.each do |number|
+    @phone_numbers.each do |number|
       @client.messages.create(
         from: TWILIO_NUMBER,
         to: number,
