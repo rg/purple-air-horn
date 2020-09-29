@@ -7,7 +7,7 @@ class Sensor
     raise ArgumentError, "sensor_id must be specified" unless sensor_id.present?
 
     @sensor_id = sensor_id
-    @conversion = conversion.try(:downcase)
+    @conversion = conversion.present? ? conversion : :raw
   end
 
   def read
@@ -64,12 +64,12 @@ class Sensor
   end
 
   def converted_value(pm2_5)
-    case conversion.try(:to_sym)
+    case conversion.downcase.to_sym
       when :aqandu
         aqandu_conversion(pm2_5)
       when :lrapa
         lrapa_conversion(pm2_5)
-      else
+      when :raw
         pm2_5
     end
   end
