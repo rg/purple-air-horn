@@ -1,5 +1,5 @@
 # purple-air-horn
-Script that sends text alerts for changes in air quality level, as measured by a specified Purple Air sensor.
+Script that sends text alerts on changes in air quality level, as measured by a specified Purple Air sensor.
 
 Designed to be run via cron job, one per Purple Air sensor ID, configured by `ENV` variables. Example:
 
