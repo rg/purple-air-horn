@@ -1,13 +1,15 @@
 # frozen_string_literal: true
 
 class Sensor
+  include Conversion
+
   DATA_URL = 'https://www.purpleair.com/json?show='
 
   def initialize(sensor_id:, conversion:)
-    raise ArgumentError, "sensor_id must be specified" unless sensor_id.present?
+    raise ArgumentError, 'sensor_id must be specified' unless sensor_id.present?
 
     @sensor_id = sensor_id
-    @conversion = conversion.present? ? conversion : :raw
+    @conversion = conversion
   end
 
   def read
@@ -15,12 +17,18 @@ class Sensor
 
     old_value = load_saved || 0
 
-    pm2_5 = stat(name: :pm2_5_atm)
-    new_value = converted_value(pm2_5)
+    if conversion_type == :us_epa
+      pm2_5 = stat(name: :pm2_5_cf_1)
+      humidity = stat(name: :humidity, sensor: 0)
+    else
+      pm2_5 = stat(name: :pm2_5_atm)
+    end
+
+    new_value = converted_value(pm2_5, humidity)
     save(new_value)
 
     {
-      conversion: conversion,
+      conversion: conversion_type,
       old_value: old_value,
       old_level: aqi_level_from_pm2_5(old_value),
       new_value: new_value,
@@ -63,56 +71,9 @@ class Sensor
     value.round(3)
   end
 
-  def converted_value(pm2_5)
-    case conversion.downcase.to_sym
-      when :aqandu
-        aqandu_conversion(pm2_5)
-      when :lrapa
-        lrapa_conversion(pm2_5)
-      when :raw
-        pm2_5
-    end
-  end
-
-  # http://www.aqandu.org/airu_sensor#calibrationSection
-  def aqandu_conversion(pm2_5_atm)
-    calc = (0.778 * pm2_5_atm) + 2.65
-
-    calc.round(3)
-  end
-
-  # https://www.lrapa.org/DocumentCenter/View/4147/PurpleAir-Correction-Summary
-  def lrapa_conversion(pm2_5_atm)
-    calc = (0.5 * pm2_5_atm) - 0.66
-    return 0 if calc.negative?
-
-    calc.round(3)
-  end
-
-  # https://forum.airnowtech.org/t/the-aqi-equation/169
-  def aqi_level_from_pm2_5(pm2_5)
-    c = pm2_5.round(1)
-
-    if 0 <= c && c <= 12.0
-      :good
-    elsif 12.1 <= c && c <= 35.4
-      :moderate
-    elsif 35.5 <= c && c <= 55.4
-      :unhealhy_sg
-    elsif 55.5 <= c && c <= 150.4
-      :unhealthy
-    elsif 150.5 <= c && c <= 250.4
-      :very_unhealthy
-    elsif 250.5 <= c && c <= 500.4
-      :hazardous
-    elsif 500.5 <= c
-      :holy_shit
-    end
-  end
-
   def last_updated
     timestamp = stat(name: :LastSeen)
-    Time.at(timestamp).strftime('%-m/%e %H:%M:%S')
+    Time.at(timestamp).strftime('%-m/%-e %H:%M:%S')
   end
 
   def parse_value(value)
