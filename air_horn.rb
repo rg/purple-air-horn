@@ -8,12 +8,14 @@ require 'json'
 require 'pry-byebug'
 require 'twilio-ruby'
 
-require_relative 'lib/text_message'
+require_relative 'lib/modules/conversion'
 require_relative 'lib/sensor'
+require_relative 'lib/text_message'
 
+conversion = ENV['CONVERSION']
 data = Sensor.new(
         sensor_id: ENV['PURPLE_AIR_SENSOR_ID'],
-        conversion: ENV['CONVERSION']
+        conversion: conversion
       ).read
 
 STDOUT.puts "."
@@ -26,7 +28,7 @@ unless data[:aqi_delta].zero?
       Change in air quality!
 
       Level:  #{data[:new_level]}
-      PM 2.5:  #{data[:new_value].round(2)} µg/m³ #{data[:conversion] ? "(#{data[:conversion]})" : ''}
+      PM 2.5:  #{data[:new_value].round(2)} µg/m³ #{conversion.present? ? "(#{conversion})" : ''}
       Updated:  #{data[:updated_at]}
     MESSAGE
 
