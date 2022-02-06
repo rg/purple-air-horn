@@ -73,7 +73,7 @@ class Sensor
 
   def last_updated
     timestamp = stat(name: :LastSeen)
-    Time.at(timestamp).strftime('%-m/%-e %H:%M:%S')
+    Time.at(timestamp).strftime('%-m/%-e/%y %H:%M:%S')
   end
 
   def parse_value(value)
